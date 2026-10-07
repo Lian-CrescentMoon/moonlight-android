@@ -835,7 +835,7 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
         // Local patch (2026-09-20): cursor drawn by the app over the stream. It owns the pointer position,
         // so the movement of the touchscreen trackpad has to go through it as well.
         if (prefConfig.enableLocalCursorOverlay && !prefConfig.enableMouseLocalCursor) {
-            localCursor = new LocalCursorOverlay(findViewById(R.id.localCursorView), streamView, conn, prefConfig.localCursorSpeed,
+            localCursor = new LocalCursorOverlay(findViewById(R.id.localCursorView), streamContainer.getSurfaceView(), conn, prefConfig.localCursorSpeed,
                     prefConfig.width, prefConfig.height);
             TrackpadContext.MoveSink sink = new TrackpadContext.MoveSink() {
                 @Override

@@ -42,6 +42,8 @@ public class LocalCursorOverlay {
     private final float hostWidth;
     private final float hostHeight;
 
+    private final int[] streamLocation = new int[2];
+    private final int[] cursorParentLocation = new int[2];
     private float fx = 0.5f, fy = 0.5f;
 
     public LocalCursorOverlay(View cursorView, View streamView, NvConnection conn, float speed, int hostWidth, int hostHeight) {
@@ -107,9 +109,16 @@ public class LocalCursorOverlay {
 
         conn.sendMousePosition((short) (fx * REF), (short) (fy * REF), REF, REF);
 
-        // Left/top edge of the view as it is drawn: scaling happens around the pivot
-        float left = streamView.getX() + streamView.getPivotX() * (1 - scaleX);
-        float top = streamView.getY() + streamView.getPivotY() * (1 - scaleY);
+        // The video surface may be nested inside StreamContainer. Convert its rendered origin
+        // into the overlay parent coordinates instead of assuming both views share a parent.
+        View cursorParent = (View) cursorView.getParent();
+        if (cursorParent == null) {
+            return;
+        }
+        streamView.getLocationOnScreen(streamLocation);
+        cursorParent.getLocationOnScreen(cursorParentLocation);
+        float left = streamLocation[0] - cursorParentLocation[0];
+        float top = streamLocation[1] - cursorParentLocation[1];
 
         cursorView.setTranslationX(left + fx * width);
         cursorView.setTranslationY(top + fy * height);
