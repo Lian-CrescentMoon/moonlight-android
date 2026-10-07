@@ -28,7 +28,10 @@ public class TouchpadGate {
     private final float edgeMm;
 
     private boolean off;
-    private long lastTypingTime = Long.MIN_VALUE;
+    // No key has been pressed yet: without this, "now - lastTypingTime" would have to start from a sentinel,
+    // and Long.MIN_VALUE overflows to a negative difference that blocks every touch until the first key press.
+    private boolean typedYet;
+    private long lastTypingTime;
     private boolean sequenceActive;
     private boolean sequenceIgnored;
     private boolean toggleKeyDown;
@@ -66,6 +69,7 @@ public class TouchpadGate {
 
         if (typingPauseMs > 0 && !isModifier(keyCode)) {
             lastTypingTime = event.getEventTime();
+            typedYet = true;
             if (sequenceActive && !sequenceIgnored) {
                 // A finger (or palm) is already on the pad while typing starts
                 sequenceIgnored = true;
@@ -90,7 +94,7 @@ public class TouchpadGate {
         if (action == MotionEvent.ACTION_DOWN) {
             sequenceActive = true;
             sequenceIgnored = off
-                    || (typingPauseMs > 0 && event.getEventTime() - lastTypingTime < typingPauseMs)
+                    || (typingPauseMs > 0 && typedYet && event.getEventTime() - lastTypingTime < typingPauseMs)
                     || (edgeMm > 0 && startsAtEdge(event));
         } else if (off) {
             sequenceIgnored = true;
